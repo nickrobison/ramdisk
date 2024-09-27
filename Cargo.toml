@@ -6,7 +6,10 @@ edition = "2021"
 rust-version = "1.73"
 
 [dependencies]
+async-channel = "2.3.1"
 clap = { version = "4.5.18", features = ["derive"] }
-notify = { version = "6.1.1", features = ["serde"] }
+futures = "0.3.30"
+notify = { version = "6.1.1", default-features = false, features = ["serde", "macos_fsevent"] }
+serde = "1.0.210"
 tokio = "1.40.0"
 toml = "0.8.19"
