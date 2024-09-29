@@ -3,9 +3,12 @@ use monitor::PathWatcher;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::thread;
+use traits::Disk;
 
 mod config;
 mod monitor;
+mod ramdisk;
+mod traits;
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -15,7 +18,14 @@ struct Args {
 }
 
 fn main() {
-    let args = Args::parse();
+
+    env_logger::builder()
+        .filter(None, log::LevelFilter::Debug).init();
+    let _args = Args::parse();
+
+    // Create the temp disk
+    let d = ramdisk::RamDisk::create(1, "Hello".to_string());
+    println!("Created: {:?}", d);
 
     let (sender, receiver) = async_channel::unbounded();
     let r1 = receiver.clone();
