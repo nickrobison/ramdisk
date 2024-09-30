@@ -32,7 +32,9 @@ impl FileMonitor for PathWatcher {
             Config::default(),
         )
         .expect("Should have created watcher");
-        let _ = watcher.watch(&self.directory, RecursiveMode::Recursive).expect("Should be watching");
+        let _ = watcher
+            .watch(&self.directory, RecursiveMode::Recursive)
+            .expect("Should be watching");
 
         self.watcher = Some(watcher);
 
