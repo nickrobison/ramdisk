@@ -2,11 +2,10 @@ use anyhow::Result;
 use clap::Parser;
 use copy::CopyHandler;
 use monitor::PathWatcher;
+use notify::event::{CreateKind, ModifyKind, RemoveKind, RenameMode};
 use notify::EventKind;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::sync::Arc;
-use std::thread;
-use tokio::task::yield_now;
 use traits::{Disk, FileMonitor};
 
 mod config;
@@ -43,10 +42,29 @@ async fn main() -> Result<()> {
     while let Some(event) = recv.recv().await {
         let ch = Arc::clone(ch);
         tokio::spawn(async move {
-            if (event.kind.is_create()) {
-                let pp = event.paths.first().expect("Should have path");
-                println!("Events: {:?}", event);
-                let _ = ch.copy(pp).await;
+            match event.kind {
+                EventKind::Create(CreateKind::File) => {
+                    let pp = event.paths.first().expect("Should have path");
+                    println!("Events: {:?}", event);
+                    let _ = ch.copy(pp).await;
+                }
+                EventKind::Remove(RemoveKind::File) => {
+                    let pp = event.paths.first().expect("Should have path");
+                    println!("Events: {:?}", event);
+                    let res = ch.remove(pp).await;
+                    println!("Rm res: {:?}", res);
+                }
+                EventKind::Modify(ModifyKind::Name(RenameMode::Both)) => {
+                    let from = &event.paths[0];
+                    let to = &event.paths[1];
+                    let _ = ch.rename(from, to);
+                }
+                EventKind::Modify(ModifyKind::Data(_)) => {
+                    let pp = event.paths.first().expect("Should have path");
+                    println!("Events: {:?}", event);
+                    let _ = ch.copy(pp).await;
+                }
+                _ => {}
             }
         });
     }

@@ -2,7 +2,7 @@ use super::{structs::VolAttach, RamDisk};
 use log::{debug, info, log_enabled};
 
 use anyhow::Result;
-use std::{fmt, process::Command, str};
+use std::{process::Command, str};
 
 use super::structs::{HdiUtilOutput, RdiskCreate};
 
@@ -24,7 +24,7 @@ impl RamDisk {
             .arg(format!("ram://{dsize}"))
             .output()?;
 
-        if (log_enabled!(log::Level::Debug)) {
+        if log_enabled!(log::Level::Debug) {
             let sout = str::from_utf8(&create_rdisk.stdout).expect("Should be parsable");
             debug!("Create disk returned: {}", sout);
         }
@@ -43,7 +43,7 @@ impl RamDisk {
             .arg(entry)
             .output()?;
 
-        if (log_enabled!(log::Level::Debug)) {
+        if log_enabled!(log::Level::Debug) {
             let sout = str::from_utf8(&erase_disk.stdout).expect("Should be parsable");
             debug!("Erase disk returned: {}", sout);
         }
@@ -55,7 +55,7 @@ impl RamDisk {
             .arg(format!("{entry}s1"))
             .output()?;
 
-        if (log_enabled!(log::Level::Debug)) {
+        if log_enabled!(log::Level::Debug) {
             let sout = str::from_utf8(&format_drive.stdout).expect("Should be parsable");
             debug!("Format disk returned: {}", sout);
         }
@@ -68,7 +68,7 @@ impl RamDisk {
             .arg(entry)
             .output()?;
 
-        if (log_enabled!(log::Level::Debug)) {
+        if log_enabled!(log::Level::Debug) {
             let sout = str::from_utf8(&attach_disk.stdout).expect("Should be parsable");
             debug!("Attach disk returned: {}", sout);
         }
@@ -92,7 +92,7 @@ impl RamDisk {
             .arg(disk_vol)
             .output()?;
 
-        if (log_enabled!(log::Level::Debug)) {
+        if log_enabled!(log::Level::Debug) {
             let sout = str::from_utf8(&attach_vol.stdout).expect("Should be parsable");
             debug!("Attach disk returned: {}", sout);
         }
