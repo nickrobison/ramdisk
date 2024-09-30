@@ -10,7 +10,10 @@ impl RamDisk {
     pub fn initialize(&self) -> Result<()> {
         let dsize = self.size * 2048;
 
-        info!("Creating temp vol named: {} with size: {}", self.name, dsize);
+        info!(
+            "Creating temp vol named: {} with size: {}",
+            self.name, dsize
+        );
 
         // Create the base ramdisk
 
@@ -52,7 +55,6 @@ impl RamDisk {
             .arg(format!("{entry}s1"))
             .output()?;
 
-
         if (log_enabled!(log::Level::Debug)) {
             let sout = str::from_utf8(&format_drive.stdout).expect("Should be parsable");
             debug!("Format disk returned: {}", sout);
@@ -89,7 +91,6 @@ impl RamDisk {
             .arg("-plist")
             .arg(disk_vol)
             .output()?;
-
 
         if (log_enabled!(log::Level::Debug)) {
             let sout = str::from_utf8(&attach_vol.stdout).expect("Should be parsable");

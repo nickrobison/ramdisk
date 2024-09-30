@@ -1,31 +1,41 @@
-use async_channel::Sender;
-use notify::{Config, RecommendedWatcher, Watcher};
+use anyhow::Result;
+use notify::{Config, Event, FsEventWatcher, RecommendedWatcher, RecursiveMode, Watcher};
 use std::path::PathBuf;
+use tokio::sync::mpsc;
+
+use crate::traits::FileMonitor;
 
 pub struct PathWatcher {
     directory: PathBuf,
-    channel: Sender<String>,
+    watcher: Option<FsEventWatcher>,
 }
 
-impl PathWatcher {
-    pub fn new(directory: PathBuf, channel: Sender<String>) -> Self {
-        Self { directory, channel }
+impl FileMonitor for PathWatcher {
+    fn create(path: PathBuf) -> Result<Self> {
+        Ok(Self {
+            directory: path,
+            watcher: None,
+        })
     }
 
-    pub fn start(&self) -> notify::Result<()> {
-        println!("Starting watch of path: {:?}", self.directory);
-        let c = self.channel.clone();
-        let _ = c.send_blocking("Start me".to_string());
+    fn watch(&mut self) -> mpsc::UnboundedReceiver<Event> {
+        let (send, recv) = mpsc::unbounded_channel();
+
         let mut watcher = RecommendedWatcher::new(
-            move |res| {
-                println!("Received: {:?}", res);
-                let _ = c.send_blocking("Hello2".to_string());
+            move |res| match res {
+                Ok(e) => {
+                    let _ = send.send(e);
+                    {}
+                }
+                Err(_) => {}
             },
             Config::default(),
-        )?;
+        )
+        .expect("Should have created watcher");
+        let _ = watcher.watch(&self.directory, RecursiveMode::Recursive).expect("Should be watching");
 
-        watcher.watch(self.directory.as_path(), notify::RecursiveMode::Recursive)?;
+        self.watcher = Some(watcher);
 
-        loop {}
+        recv
     }
 }
